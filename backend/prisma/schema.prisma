@@ -20,28 +20,34 @@ model User {
 }
 
 model Labour {
-  id             Int           @id @default(autoincrement())
-  fullName       String
-  mobileNumber   String        @unique
-  aadhaarNumber  String        @unique
-  address        String
-  dailyWage      Float
-  attendances    Attendance[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id            Int            @id @default(autoincrement())
+  fullName      String
+  mobileNumber  String         @unique
+  aadhaarNumber String         @unique
+  address       String
+  dailyWage     Float
+
+  attendances   Attendance[]
+  payrolls      Payroll[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model Project {
-  id            Int           @id @default(autoincrement())
-  projectName   String
-  siteAddress   String
-  startDate     DateTime
-  endDate       DateTime
-  budget        Float
-  status        String        @default("ACTIVE")
-  attendances   Attendance[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id           Int            @id @default(autoincrement())
+  projectName  String
+  siteAddress  String
+  startDate    DateTime
+  endDate      DateTime
+  budget       Float
+  status       String         @default("ACTIVE")
+
+  attendances  Attendance[]
+  payrolls     Payroll[]
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
 
 model Attendance {
@@ -53,9 +59,38 @@ model Attendance {
   date       DateTime
   status     String
 
-  labour      Labour   @relation(fields: [labourId], references: [id], onDelete: Cascade)
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  labour     Labour   @relation(fields: [labourId], references: [id], onDelete: Cascade)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([labourId, projectId, date])
+}
+
+model Payroll {
+  id             Int       @id @default(autoincrement())
+
+  labourId       Int
+  projectId      Int
+
+  month          Int
+  year           Int
+
+  presentDays    Int
+  halfDays       Int
+  absentDays     Int
+
+  totalSalary    Float
+
+  paymentStatus  String    @default("PENDING")
+  paidDate       DateTime?
+
+  labour         Labour    @relation(fields: [labourId], references: [id], onDelete: Cascade)
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([labourId, projectId, month, year])
 }

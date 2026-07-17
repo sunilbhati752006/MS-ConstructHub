@@ -8,6 +8,7 @@ const addAttendance = async (req, res) => {
   try {
     const { labourId, projectId, date, status } = req.body;
 
+    // Check Labour
     const labour = await prismaClient.labour.findUnique({
       where: { id: labourId },
     });
@@ -19,6 +20,7 @@ const addAttendance = async (req, res) => {
       });
     }
 
+    // Check Project
     const project = await prismaClient.project.findUnique({
       where: { id: projectId },
     });
@@ -27,6 +29,23 @@ const addAttendance = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Project not found",
+      });
+    }
+
+    // Check Duplicate Attendance
+    const existingAttendance = await prismaClient.attendance.findFirst({
+      where: {
+        labourId,
+        projectId,
+        date: new Date(date),
+      },
+    });
+
+    if (existingAttendance) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Attendance already exists for this labour on this project for the selected date.",
       });
     }
 
@@ -61,6 +80,9 @@ const getAllAttendance = async (req, res) => {
       include: {
         labour: true,
         project: true,
+      },
+      orderBy: {
+        date: "desc",
       },
     });
 
@@ -127,6 +149,26 @@ const updateAttendance = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Attendance not found",
+      });
+    }
+
+    // Check duplicate (ignore current record)
+    const duplicateAttendance = await prismaClient.attendance.findFirst({
+      where: {
+        labourId,
+        projectId,
+        date: new Date(date),
+        NOT: {
+          id,
+        },
+      },
+    });
+
+    if (duplicateAttendance) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Attendance already exists for this labour on this project for the selected date.",
       });
     }
 
