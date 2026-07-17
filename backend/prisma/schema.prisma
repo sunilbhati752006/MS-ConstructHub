@@ -45,6 +45,7 @@ model Project {
 
   attendances  Attendance[]
   payrolls     Payroll[]
+  expenses     Expense[]
 
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -93,4 +94,22 @@ model Payroll {
   updatedAt      DateTime  @updatedAt
 
   @@unique([labourId, projectId, month, year])
+}
+
+model Expense {
+  id           Int      @id @default(autoincrement())
+
+  projectId    Int
+
+  title        String
+  category     String
+  amount       Float
+
+  expenseDate  DateTime
+  description  String?
+
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

@@ -6,23 +6,40 @@ const labourRoutes = require("./routes/labourRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const payrollRoutes = require("./routes/payrollRoutes");
+const expenseRoutes = require("./routes/expenseRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// =========================
+// API Routes
+// =========================
 app.use("/api/auth", authRoutes);
 app.use("/api/labour", labourRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/payroll", payrollRoutes);
+app.use("/api/expenses", expenseRoutes);
 
+// =========================
 // Home Route
+// =========================
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
+    success: true,
     message: "MS ConstructHub Backend Running Successfully 🚀",
+  });
+});
+
+// =========================
+// 404 Route
+// =========================
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
   });
 });
 
