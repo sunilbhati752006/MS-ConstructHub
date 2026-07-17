@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  fullName     String
+  email        String   @unique
+  mobileNumber String   @unique
+  password     String
+  role         String   @default("OWNER")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Labour {
+  id             Int      @id @default(autoincrement())
+  fullName       String
+  mobileNumber   String   @unique
+  aadhaarNumber  String   @unique
+  address        String
+  dailyWage      Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Project {
+  id            Int      @id @default(autoincrement())
+  projectName   String
+  siteAddress   String
+  startDate     DateTime
+  endDate       DateTime
+  budget        Float
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
