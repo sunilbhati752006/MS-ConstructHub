@@ -1,6 +1,28 @@
 const prisma = require("@prisma/client");
 const prismaClient = new prisma.PrismaClient();
 
+// =====================================
+// Check if Salary is Already Paid
+// =====================================
+const isPayrollPaid = async (labourId, projectId, date) => {
+  const attendanceDate = new Date(date);
+
+  const month = attendanceDate.getMonth() + 1;
+  const year = attendanceDate.getFullYear();
+
+  const payroll = await prismaClient.payroll.findFirst({
+    where: {
+      labourId,
+      projectId,
+      month,
+      year,
+      paymentStatus: "PAID",
+    },
+  });
+
+  return !!payroll;
+};
+
 // ==========================
 // Add Attendance
 // ==========================
@@ -10,7 +32,9 @@ const addAttendance = async (req, res) => {
 
     // Check Labour
     const labour = await prismaClient.labour.findUnique({
-      where: { id: labourId },
+      where: {
+        id: labourId,
+      },
     });
 
     if (!labour) {
@@ -22,7 +46,9 @@ const addAttendance = async (req, res) => {
 
     // Check Project
     const project = await prismaClient.project.findUnique({
-      where: { id: projectId },
+      where: {
+        id: projectId,
+      },
     });
 
     if (!project) {
@@ -32,14 +58,30 @@ const addAttendance = async (req, res) => {
       });
     }
 
+    // Check Paid Payroll
+    const payrollPaid = await isPayrollPaid(
+      labourId,
+      projectId,
+      date
+    );
+
+    if (payrollPaid) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Attendance cannot be modified because salary has already been paid for this month.",
+      });
+    }
+
     // Check Duplicate Attendance
-    const existingAttendance = await prismaClient.attendance.findFirst({
-      where: {
-        labourId,
-        projectId,
-        date: new Date(date),
-      },
-    });
+    const existingAttendance =
+      await prismaClient.attendance.findFirst({
+        where: {
+          labourId,
+          projectId,
+          date: new Date(date),
+        },
+      });
 
     if (existingAttendance) {
       return res.status(409).json({
@@ -49,22 +91,23 @@ const addAttendance = async (req, res) => {
       });
     }
 
-    const attendance = await prismaClient.attendance.create({
-      data: {
-        labourId,
-        projectId,
-        date: new Date(date),
-        status,
-      },
-    });
+    const attendance =
+      await prismaClient.attendance.create({
+        data: {
+          labourId,
+          projectId,
+          date: new Date(date),
+          status,
+        },
+      });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Attendance marked successfully",
       data: attendance,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -76,23 +119,24 @@ const addAttendance = async (req, res) => {
 // ==========================
 const getAllAttendance = async (req, res) => {
   try {
-    const attendance = await prismaClient.attendance.findMany({
-      include: {
-        labour: true,
-        project: true,
-      },
-      orderBy: {
-        date: "desc",
-      },
-    });
+    const attendance =
+      await prismaClient.attendance.findMany({
+        include: {
+          labour: true,
+          project: true,
+        },
+        orderBy: {
+          date: "desc",
+        },
+      });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: attendance.length,
       data: attendance,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -106,13 +150,16 @@ const getAttendanceById = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
-    const attendance = await prismaClient.attendance.findUnique({
-      where: { id },
-      include: {
-        labour: true,
-        project: true,
-      },
-    });
+    const attendance =
+      await prismaClient.attendance.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          labour: true,
+          project: true,
+        },
+      });
 
     if (!attendance) {
       return res.status(404).json({
@@ -121,12 +168,12 @@ const getAttendanceById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: attendance,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -142,7 +189,9 @@ const updateAttendance = async (req, res) => {
     const { labourId, projectId, date, status } = req.body;
 
     const attendance = await prismaClient.attendance.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
     });
 
     if (!attendance) {
@@ -152,17 +201,33 @@ const updateAttendance = async (req, res) => {
       });
     }
 
-    // Check duplicate (ignore current record)
-    const duplicateAttendance = await prismaClient.attendance.findFirst({
-      where: {
-        labourId,
-        projectId,
-        date: new Date(date),
-        NOT: {
-          id,
+    // Check Paid Payroll
+    const payrollPaid = await isPayrollPaid(
+      labourId,
+      projectId,
+      date
+    );
+
+    if (payrollPaid) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Attendance cannot be modified because salary has already been paid for this month.",
+      });
+    }
+
+    // Check Duplicate Attendance
+    const duplicateAttendance =
+      await prismaClient.attendance.findFirst({
+        where: {
+          labourId,
+          projectId,
+          date: new Date(date),
+          NOT: {
+            id,
+          },
         },
-      },
-    });
+      });
 
     if (duplicateAttendance) {
       return res.status(409).json({
@@ -172,23 +237,26 @@ const updateAttendance = async (req, res) => {
       });
     }
 
-    const updatedAttendance = await prismaClient.attendance.update({
-      where: { id },
-      data: {
-        labourId,
-        projectId,
-        date: new Date(date),
-        status,
-      },
-    });
+    const updatedAttendance =
+      await prismaClient.attendance.update({
+        where: {
+          id,
+        },
+        data: {
+          labourId,
+          projectId,
+          date: new Date(date),
+          status,
+        },
+      });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Attendance updated successfully",
       data: updatedAttendance,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -203,7 +271,9 @@ const deleteAttendance = async (req, res) => {
     const id = Number(req.params.id);
 
     const attendance = await prismaClient.attendance.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
     });
 
     if (!attendance) {
@@ -213,16 +283,33 @@ const deleteAttendance = async (req, res) => {
       });
     }
 
+    // Check Paid Payroll
+    const payrollPaid = await isPayrollPaid(
+      attendance.labourId,
+      attendance.projectId,
+      attendance.date
+    );
+
+    if (payrollPaid) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Attendance cannot be modified because salary has already been paid for this month.",
+      });
+    }
+
     await prismaClient.attendance.delete({
-      where: { id },
+      where: {
+        id,
+      },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Attendance deleted successfully",
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
