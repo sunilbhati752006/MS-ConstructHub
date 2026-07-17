@@ -11,9 +11,7 @@ const generatePayroll = async (req, res) => {
 
     // Check Labour
     const labour = await prisma.labour.findUnique({
-      where: {
-        id: labourId,
-      },
+      where: { id: labourId },
     });
 
     if (!labour) {
@@ -25,9 +23,7 @@ const generatePayroll = async (req, res) => {
 
     // Check Project
     const project = await prisma.project.findUnique({
-      where: {
-        id: projectId,
-      },
+      where: { id: projectId },
     });
 
     if (!project) {
@@ -37,7 +33,7 @@ const generatePayroll = async (req, res) => {
       });
     }
 
-    // Check Duplicate Payroll
+    // Check Existing Payroll
     const existingPayroll = await prisma.payroll.findFirst({
       where: {
         labourId,
@@ -48,17 +44,17 @@ const generatePayroll = async (req, res) => {
     });
 
     if (existingPayroll) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: "Payroll already generated for this month.",
+        message: "Payroll for this month has already been generated.",
       });
     }
 
-    // Month Dates
+    // Month Start & End
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
-    // Get Attendance
+    // Attendance Records
     const attendance = await prisma.attendance.findMany({
       where: {
         labourId,
@@ -70,17 +66,31 @@ const generatePayroll = async (req, res) => {
       },
     });
 
+    // NEW VALIDATION
+    if (attendance.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "No attendance found for the selected month. Complete attendance before generating payroll.",
+      });
+    }
+
     let presentDays = 0;
     let halfDays = 0;
     let absentDays = 0;
 
     attendance.forEach((item) => {
-      if (item.status === "PRESENT") {
-        presentDays++;
-      } else if (item.status === "HALF_DAY") {
-        halfDays++;
-      } else {
-        absentDays++;
+      switch (item.status) {
+        case "PRESENT":
+          presentDays++;
+          break;
+
+        case "HALF_DAY":
+          halfDays++;
+          break;
+
+        default:
+          absentDays++;
       }
     });
 
@@ -101,13 +111,13 @@ const generatePayroll = async (req, res) => {
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Payroll generated successfully.",
       payroll,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -123,6 +133,9 @@ const getAllPayroll = async (req, res) => {
       include: {
         labour: true,
         project: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -147,9 +160,7 @@ const getPayrollById = async (req, res) => {
     const id = Number(req.params.id);
 
     const payroll = await prisma.payroll.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
       include: {
         labour: true,
         project: true,
@@ -183,9 +194,7 @@ const markSalaryPaid = async (req, res) => {
     const id = Number(req.params.id);
 
     const payroll = await prisma.payroll.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     });
 
     if (!payroll) {
@@ -195,10 +204,15 @@ const markSalaryPaid = async (req, res) => {
       });
     }
 
+    if (payroll.paymentStatus === "PAID") {
+      return res.status(400).json({
+        success: false,
+        message: "Salary has already been marked as paid.",
+      });
+    }
+
     const updatedPayroll = await prisma.payroll.update({
-      where: {
-        id,
-      },
+      where: { id },
       data: {
         paymentStatus: "PAID",
         paidDate: new Date(),
@@ -207,7 +221,7 @@ const markSalaryPaid = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Salary marked as paid.",
+      message: "Salary marked as paid successfully.",
       payroll: updatedPayroll,
     });
   } catch (error) {
@@ -226,9 +240,7 @@ const deletePayroll = async (req, res) => {
     const id = Number(req.params.id);
 
     const payroll = await prisma.payroll.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     });
 
     if (!payroll) {
@@ -239,9 +251,7 @@ const deletePayroll = async (req, res) => {
     }
 
     await prisma.payroll.delete({
-      where: {
-        id,
-      },
+      where: { id },
     });
 
     res.status(200).json({
