@@ -8,9 +8,13 @@ const attendanceRoutes = require("./routes/attendanceRoutes");
 const payrollRoutes = require("./routes/payrollRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const materialRoutes = require("./routes/materialRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
+// =========================
+// Middlewares
+// =========================
 app.use(cors());
 app.use(express.json());
 
@@ -24,6 +28,7 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/payroll", payrollRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/materials", materialRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // =========================
 // Home Route
