@@ -20,24 +20,42 @@ model User {
 }
 
 model Labour {
-  id             Int      @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   fullName       String
-  mobileNumber   String   @unique
-  aadhaarNumber  String   @unique
+  mobileNumber   String        @unique
+  aadhaarNumber  String        @unique
   address        String
   dailyWage      Float
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  attendances    Attendance[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 model Project {
-  id            Int      @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   projectName   String
   siteAddress   String
   startDate     DateTime
   endDate       DateTime
   budget        Float
-  status        String   @default("ACTIVE")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        String        @default("ACTIVE")
+  attendances   Attendance[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Attendance {
+  id         Int      @id @default(autoincrement())
+
+  labourId   Int
+  projectId  Int
+
+  date       DateTime
+  status     String
+
+  labour      Labour   @relation(fields: [labourId], references: [id], onDelete: Cascade)
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
