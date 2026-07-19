@@ -145,8 +145,100 @@ const createUser = async (req, res) => {
   }
 };
 
+// =======================================
+// Update User (OWNER Only)
+// =======================================
+const updateUser = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const { fullName, email, mobileNumber, role } = req.body;
+
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (role && role !== "OWNER" && role !== "MANAGER") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role",
+      });
+    }
+
+    if (email || mobileNumber) {
+      const duplicateUser = await prisma.user.findFirst({
+        where: {
+          AND: [
+            {
+              OR: [
+                { email },
+                { mobileNumber },
+              ],
+            },
+            {
+              NOT: {
+                id,
+              },
+            },
+          ],
+        },
+      });
+
+      if (duplicateUser) {
+        return res.status(400).json({
+          success: false,
+          message: "Email or Mobile Number already exists",
+        });
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        fullName,
+        email,
+        mobileNumber,
+        role,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        mobileNumber: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUserById,
   createUser,
+  updateUser,
 };
