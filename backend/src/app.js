@@ -9,6 +9,7 @@ const payrollRoutes = require("./routes/payrollRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const materialRoutes = require("./routes/materialRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/payroll", payrollRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/materials", materialRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/reports", reportRoutes);
 
 // =========================
 // Home Route
