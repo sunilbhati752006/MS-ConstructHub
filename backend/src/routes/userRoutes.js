@@ -4,7 +4,8 @@ const router = express.Router();
 
 const {
     getAllUsers,
-    getUserById
+    getUserById,
+    createUser
 } = require("../controllers/userController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -13,6 +14,14 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 // =======================================
 // User Routes
 // =======================================
+
+// Create User (OWNER Only)
+router.post(
+    "/create",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    createUser
+);
 
 // Get All Users (OWNER Only)
 router.get(

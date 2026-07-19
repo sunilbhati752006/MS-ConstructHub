@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcrypt");
 
 const prisma = new PrismaClient();
 
@@ -76,7 +77,76 @@ const getUserById = async (req, res) => {
   }
 };
 
+// =======================================
+// Create New User (OWNER Only)
+// =======================================
+const createUser = async (req, res) => {
+  try {
+    const { fullName, email, mobileNumber, password, role } = req.body;
+
+    if (!fullName || !email || !mobileNumber || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    if (role !== "OWNER" && role !== "MANAGER") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role",
+      });
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { mobileNumber }],
+      },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email or Mobile Number already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        fullName,
+        email,
+        mobileNumber,
+        password: hashedPassword,
+        role,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        mobileNumber: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUserById,
+  createUser,
 };
