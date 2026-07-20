@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const register = async (req, res) => {
     try {
@@ -205,8 +206,169 @@ const changePassword = async (req, res) => {
     }
 };
 
+// =======================================
+// Forgot Password
+// =======================================
+const forgotPassword = async (req, res) => {
+    try {
+
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required"
+            });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: {
+                email
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Generate Secure Token
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        // Token Expiry (15 Minutes)
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+        // Delete old reset tokens
+        await prisma.passwordResetToken.deleteMany({
+            where: {
+                userId: user.id
+            }
+        });
+
+        // Save new token
+        await prisma.passwordResetToken.create({
+            data: {
+                token: resetToken,
+                expiresAt,
+                userId: user.id
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset token generated successfully",
+            resetToken
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+
+    }
+};
+
+// =======================================
+// Reset Password
+// =======================================
+const resetPassword = async (req, res) => {
+    try {
+
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Token and new password are required"
+            });
+        }
+
+        const resetToken = await prisma.passwordResetToken.findUnique({
+            where: {
+                token
+            },
+            include: {
+                user: true
+            }
+        });
+
+        if (!resetToken) {
+            return res.status(404).json({
+                success: false,
+                message: "Invalid reset token"
+            });
+        }
+
+        if (resetToken.expiresAt < new Date()) {
+
+            await prisma.passwordResetToken.delete({
+                where: {
+                    id: resetToken.id
+                }
+            });
+
+            return res.status(400).json({
+                success: false,
+                message: "Reset token has expired"
+            });
+        }
+
+        const isSamePassword = await bcrypt.compare(
+            newPassword,
+            resetToken.user.password
+        );
+
+        if (isSamePassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New password cannot be same as current password"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await prisma.user.update({
+            where: {
+                id: resetToken.user.id
+            },
+            data: {
+                password: hashedPassword
+            }
+        });
+
+        await prisma.passwordResetToken.delete({
+            where: {
+                id: resetToken.id
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successfully"
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+
+    }
+};
+
 module.exports = {
     register,
     login,
-    changePassword
+    changePassword,
+    forgotPassword,
+    resetPassword
 };
