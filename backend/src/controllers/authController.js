@@ -34,9 +34,17 @@ const register = async (req, res) => {
         });
 
         res.status(201).json({
-            message: "User Registered Successfully",
-            user
-        });
+    success: true,
+    message: "User Registered Successfully",
+    user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        mobileNumber: user.mobileNumber,
+        role: user.role,
+        isActive: user.isActive
+    }
+});
 
     } catch (error) {
 
@@ -74,6 +82,14 @@ const login = async (req, res) => {
             });
         }
 
+        // Check if account is active
+if (!user.isActive) {
+    return res.status(403).json({
+        success: false,
+        message: "Your account is deactivated. Please contact the owner."
+    });
+}
+
         const token = jwt.sign(
             {
                 id: user.id,
@@ -86,11 +102,19 @@ const login = async (req, res) => {
             }
         );
 
-        res.status(200).json({
-            message: "Login Successful",
-            token,
-            user
-        });
+       res.status(200).json({
+    success: true,
+    message: "Login Successful",
+    token,
+    user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        mobileNumber: user.mobileNumber,
+        role: user.role,
+        isActive: user.isActive
+    }
+});
 
     } catch (error) {
 

@@ -7,6 +7,7 @@ const {
   getUserById,
   createUser,
   updateUser,
+  updateUserStatus,
 } = require("../controllers/userController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -28,8 +29,16 @@ router.post(
 router.put(
   "/:id",
   authMiddleware,
-  authorizeRoles("OWNER"),
+ authorizeRoles("OWNER"),
   updateUser
+);
+
+// Activate / Deactivate User (OWNER Only)
+router.patch(
+  "/:id/status",
+  authMiddleware,
+  authorizeRoles("OWNER"),
+  updateUserStatus
 );
 
 // Get All Users (OWNER Only)

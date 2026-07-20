@@ -235,10 +235,74 @@ const updateUser = async (req, res) => {
     });
   }
 };
+// =======================================
+// Activate / Deactivate User (OWNER Only)
+// =======================================
+const updateUserStatus = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { isActive } = req.body;
+
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "isActive must be true or false",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // OWNER cannot deactivate himself
+    if (req.user.id === id && isActive === false) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot deactivate your own account",
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { isActive },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        mobileNumber: true,
+        role: true,
+        isActive: true,
+        updatedAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: isActive
+        ? "User activated successfully"
+        : "User deactivated successfully",
+      data: updatedUser,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   getAllUsers,
   getUserById,
   createUser,
   updateUser,
+   updateUserStatus,
 };
