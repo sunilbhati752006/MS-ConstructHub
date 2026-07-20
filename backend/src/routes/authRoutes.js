@@ -3,7 +3,8 @@ const router = express.Router();
 
 const {
     register,
-    login
+    login,
+    changePassword
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -18,6 +19,12 @@ router.get("/test", (req, res) => {
 router.post("/register", register);
 
 router.post("/login", login);
+
+router.put(
+    "/change-password",
+    authMiddleware,
+    changePassword
+);
 
 router.get("/profile", authMiddleware, (req, res) => {
     res.status(200).json({
