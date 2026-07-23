@@ -1,7 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../config/prisma");
 const bcrypt = require("bcrypt");
 
-const prisma = new PrismaClient();
 
 // =======================================
 // Get All Users
@@ -84,14 +83,45 @@ const createUser = async (req, res) => {
   try {
     const { fullName, email, mobileNumber, password, role } = req.body;
 
-    if (!fullName || !email || !mobileNumber || !password || !role) {
+const name = fullName?.trim();
+const userEmail = email?.trim().toLowerCase();
+const mobile = mobileNumber?.trim();
+const userPassword = password?.trim();
+
+if (!name || !userEmail || !mobile || !userPassword || !role) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
       });
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (role !== "OWNER" && role !== "MANAGER") {
+if (!emailRegex.test(userEmail)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid email format",
+  });
+}
+const mobileRegex = /^[6-9]\d{9}$/;
+
+if (!mobileRegex.test(mobile)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid mobile number",
+  });
+}
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+if (!passwordRegex.test(userPassword)) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Password must be at least 8 characters and contain uppercase, lowercase, and a number",
+  });
+}
+const validRole = role?.trim().toUpperCase();
+    if (validRole !== "OWNER" && validRole !== "MANAGER") {
       return res.status(400).json({
         success: false,
         message: "Invalid role",
@@ -99,10 +129,13 @@ const createUser = async (req, res) => {
     }
 
     const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email }, { mobileNumber }],
-      },
-    });
+  where: {
+    OR: [
+      { email: userEmail },
+      { mobileNumber: mobile },
+    ],
+  },
+});
 
     if (existingUser) {
       return res.status(400).json({
@@ -111,16 +144,16 @@ const createUser = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(userPassword, 10);
 
     const user = await prisma.user.create({
       data: {
-        fullName,
-        email,
-        mobileNumber,
-        password: hashedPassword,
-        role,
-      },
+  fullName: name,
+  email: userEmail,
+  mobileNumber: mobile,
+  password: hashedPassword,
+ role: validRole,
+},
       select: {
         id: true,
         fullName: true,
@@ -153,6 +186,10 @@ const updateUser = async (req, res) => {
     const id = Number(req.params.id);
 
     const { fullName, email, mobileNumber, role } = req.body;
+    const name = fullName?.trim();
+const userEmail = email?.trim().toLowerCase();
+const mobile = mobileNumber?.trim();
+const validRole = role?.trim().toUpperCase();
 
     const existingUser = await prisma.user.findUnique({
       where: {
@@ -166,8 +203,27 @@ const updateUser = async (req, res) => {
         message: "User not found",
       });
     }
+    if (email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (role && role !== "OWNER" && role !== "MANAGER") {
+  if (!emailRegex.test(userEmail)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid email format",
+    });
+  }
+}
+if (mobileNumber) {
+  const mobileRegex = /^[6-9]\d{9}$/;
+
+  if (!mobileRegex.test(mobile)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid mobile number",
+    });
+  }
+}
+if (role && validRole !== "OWNER" && validRole !== "MANAGER") {
       return res.status(400).json({
         success: false,
         message: "Invalid role",
@@ -176,23 +232,22 @@ const updateUser = async (req, res) => {
 
     if (email || mobileNumber) {
       const duplicateUser = await prisma.user.findFirst({
-        where: {
-          AND: [
-            {
-              OR: [
-                { email },
-                { mobileNumber },
-              ],
-            },
-            {
-              NOT: {
-                id,
-              },
-            },
-          ],
+  where: {
+    AND: [
+      {
+        OR: [
+          { email: userEmail },
+          { mobileNumber: mobile },
+        ],
+      },
+      {
+        NOT: {
+          id,
         },
-      });
-
+      },
+    ],
+  },
+});
       if (duplicateUser) {
         return res.status(400).json({
           success: false,
@@ -206,11 +261,11 @@ const updateUser = async (req, res) => {
         id,
       },
       data: {
-        fullName,
-        email,
-        mobileNumber,
-        role,
-      },
+  fullName: name,
+  email: userEmail,
+  mobileNumber: mobile,
+  role: validRole,
+},
       select: {
         id: true,
         fullName: true,
