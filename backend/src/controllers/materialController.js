@@ -1,6 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+const prisma = require("../config/prisma");
 
 // =========================
 // Add Material
@@ -16,21 +14,30 @@ const addMaterial = async (req, res) => {
       unitPrice,
       supplier,
     } = req.body;
+  const name = materialName?.trim();
+const materialCategory = category?.trim();
+const materialUnit = unit?.trim();
+const materialSupplier = supplier?.trim();
 
     // Validate Required Fields
     if (
-      !projectId ||
-      !materialName ||
-      !category ||
-      !unit ||
-      quantity === undefined ||
-      unitPrice === undefined ||
-      !supplier
-    ) {
+  !projectId ||
+  !name ||
+  !materialCategory ||
+  !materialUnit ||
+  quantity === undefined ||
+  unitPrice === undefined ||
+  !materialSupplier
+) {
       return res.status(400).json({
         message: "All required fields are mandatory",
       });
     }
+if (!Number.isInteger(Number(projectId)) || Number(projectId) <= 0) {
+  return res.status(400).json({
+    message: "Invalid project ID",
+  });
+}
 
     // Check Project Exists
     const project = await prisma.project.findUnique({
@@ -61,14 +68,14 @@ const addMaterial = async (req, res) => {
 
     const material = await prisma.material.create({
       data: {
-        projectId: Number(projectId),
-        materialName,
-        category,
-        unit,
-        quantity: Number(quantity),
-        unitPrice: Number(unitPrice),
-        supplier,
-      },
+  projectId: Number(projectId),
+  materialName: name,
+  category: materialCategory,
+  unit: materialUnit,
+  quantity: Number(quantity),
+  unitPrice: Number(unitPrice),
+  supplier: materialSupplier,
+},
       include: {
         project: true,
       },
@@ -155,6 +162,10 @@ const updateMaterial = async (req, res) => {
       unitPrice,
       supplier,
     } = req.body;
+    const name = materialName?.trim();
+const materialCategory = category?.trim();
+const materialUnit = unit?.trim();
+const materialSupplier = supplier?.trim();
 
     const existingMaterial = await prisma.material.findUnique({
       where: {
@@ -168,11 +179,18 @@ const updateMaterial = async (req, res) => {
       });
     }
 
+    if (!Number.isInteger(Number(projectId)) || Number(projectId) <= 0) {
+  return res.status(400).json({
+    message: "Invalid project ID",
+  });
+}
+
     const project = await prisma.project.findUnique({
       where: {
         id: Number(projectId),
       },
     });
+
 
     if (!project) {
       return res.status(404).json({
@@ -197,14 +215,14 @@ const updateMaterial = async (req, res) => {
         id: Number(id),
       },
       data: {
-        projectId: Number(projectId),
-        materialName,
-        category,
-        unit,
-        quantity: Number(quantity),
-        unitPrice: Number(unitPrice),
-        supplier,
-      },
+  projectId: Number(projectId),
+  materialName: name,
+  category: materialCategory,
+  unit: materialUnit,
+  quantity: Number(quantity),
+  unitPrice: Number(unitPrice),
+  supplier: materialSupplier,
+},
       include: {
         project: true,
       },
