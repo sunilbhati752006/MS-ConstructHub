@@ -6,7 +6,8 @@ const {
     login,
     changePassword,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    getCurrentUser
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -38,6 +39,12 @@ router.get("/profile", authMiddleware, (req, res) => {
         user: req.user
     });
 });
+
+router.get(
+    "/me",
+    authMiddleware,
+    getCurrentUser
+);
 
 router.get(
     "/admin",
