@@ -10,43 +10,89 @@ const addLabour = async (req, res) => {
             address,
             dailyWage
         } = req.body;
+const name = fullName?.trim();
+const mobile = mobileNumber?.trim();
+const aadhaar = aadhaarNumber?.trim();
+const labourAddress = address?.trim();
+const wage = Number(dailyWage);
 
-        const existingLabour = await prisma.labour.findFirst({
-            where: {
-                OR: [
-                    { mobileNumber },
-                    { aadhaarNumber }
-                ]
-            }
-        });
+if (
+    !name ||
+    !mobile ||
+    !aadhaar ||
+    !labourAddress ||
+    dailyWage === undefined ||
+    dailyWage === null ||
+    dailyWage === ""
+) {
+    return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+    });
+}
 
-        if (existingLabour) {
-            return res.status(400).json({
-                message: "Labour already exists"
-            });
-        }
+const mobileRegex = /^[6-9]\d{9}$/;
+
+if (!mobileRegex.test(mobile)) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid mobile number"
+    });
+}
+
+const aadhaarRegex = /^\d{12}$/;
+
+if (!aadhaarRegex.test(aadhaar)) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid Aadhaar number"
+    });
+}
+
+if (isNaN(wage) || wage <= 0) {
+    return res.status(400).json({
+        success: false,
+        message: "Daily wage must be greater than zero"
+    });
+}
+
+ const existingLabour = await prisma.labour.findFirst({
+    where: {
+        OR: [
+            { mobileNumber: mobile },
+            { aadhaarNumber: aadhaar }
+        ]
+    }
+});
+if (existingLabour) {
+    return res.status(400).json({
+        success: false,
+        message: "Labour already exists"
+    });
+}
 
         const labour = await prisma.labour.create({
-            data: {
-                fullName,
-                mobileNumber,
-                aadhaarNumber,
-                address,
-                dailyWage
-            }
-        });
+    data: {
+        fullName: name,
+        mobileNumber: mobile,
+        aadhaarNumber: aadhaar,
+        address: labourAddress,
+        dailyWage: wage
+    }
+});
 
         res.status(201).json({
-            message: "Labour Added Successfully",
-            labour
-        });
-
+    success: true,
+    message: "Labour added successfully",
+    labour
+});
     } catch (error) {
         console.log(error);
 
         res.status(500).json({
-            message: "Server Error"
-        });
+    success: false,
+    message: "Server Error"
+});
     }
 };
 
@@ -59,17 +105,19 @@ const getAllLabours = async (req, res) => {
             }
         });
 
-        res.status(200).json({
-            message: "Labour List",
-            labours
-        });
+       res.status(200).json({
+    success: true,
+    message: "Labour list fetched successfully",
+    labours
+});
 
     } catch (error) {
         console.log(error);
 
         res.status(500).json({
-            message: "Server Error"
-        });
+    success: false,
+    message: "Server Error"
+});
     }
 };
 
@@ -86,21 +134,24 @@ const getLabourById = async (req, res) => {
 
         if (!labour) {
             return res.status(404).json({
+                success: false,
                 message: "Labour not found"
             });
         }
 
         res.status(200).json({
-            message: "Labour Found",
-            labour
-        });
+    success: true,
+    message: "Labour fetched successfully",
+    labour
+});
 
     } catch (error) {
         console.log(error);
 
         res.status(500).json({
-            message: "Server Error"
-        });
+    success: false,
+    message: "Server Error"
+});
     }
 };
 
@@ -116,7 +167,52 @@ const updateLabour = async (req, res) => {
             address,
             dailyWage
         } = req.body;
+        
+        const name = fullName?.trim();
+const mobile = mobileNumber?.trim();
+const aadhaar = aadhaarNumber?.trim();
+const labourAddress = address?.trim();
+const wage = Number(dailyWage);
 
+if (
+    !name ||
+    !mobile ||
+    !aadhaar ||
+    !labourAddress ||
+    dailyWage === undefined ||
+    dailyWage === null ||
+    dailyWage === ""
+) {
+    return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+    });
+}
+
+const mobileRegex = /^[6-9]\d{9}$/;
+
+if (!mobileRegex.test(mobile)) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid mobile number"
+    });
+}
+
+const aadhaarRegex = /^\d{12}$/;
+
+if (!aadhaarRegex.test(aadhaar)) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid Aadhaar number"
+    });
+}
+
+if (isNaN(wage) || wage <= 0) {
+    return res.status(400).json({
+        success: false,
+        message: "Daily wage must be greater than zero"
+    });
+}
         const labour = await prisma.labour.findUnique({
             where: {
                 id: Number(id)
@@ -129,30 +225,57 @@ const updateLabour = async (req, res) => {
             });
         }
 
-        const updatedLabour = await prisma.labour.update({
-            where: {
-                id: Number(id)
+        const duplicateLabour = await prisma.labour.findFirst({
+    where: {
+        AND: [
+            {
+                OR: [
+                    { mobileNumber: mobile },
+                    { aadhaarNumber: aadhaar }
+                ]
             },
-            data: {
-                fullName,
-                mobileNumber,
-                aadhaarNumber,
-                address,
-                dailyWage
+            {
+                NOT: {
+                    id: Number(id)
+                }
             }
-        });
+        ]
+    }
+});
 
-        res.status(200).json({
-            message: "Labour Updated Successfully",
-            labour: updatedLabour
-        });
+if (duplicateLabour) {
+    return res.status(400).json({
+        success: false,
+        message: "Mobile number or Aadhaar already exists"
+    });
+}
+
+       const updatedLabour = await prisma.labour.update({
+    where: {
+        id: Number(id)
+    },
+    data: {
+        fullName: name,
+        mobileNumber: mobile,
+        aadhaarNumber: aadhaar,
+        address: labourAddress,
+        dailyWage: wage
+    }
+});
+
+       res.status(200).json({
+    success: true,
+    message: "Labour updated successfully",
+    labour: updatedLabour
+});
 
     } catch (error) {
         console.log(error);
 
         res.status(500).json({
-            message: "Server Error"
-        });
+    success: false,
+    message: "Server Error"
+});
     }
 };
 
@@ -169,6 +292,7 @@ const deleteLabour = async (req, res) => {
 
         if (!labour) {
             return res.status(404).json({
+                success: false,
                 message: "Labour not found"
             });
         }
@@ -179,16 +303,20 @@ const deleteLabour = async (req, res) => {
             }
         });
 
-        res.status(200).json({
-            message: "Labour Deleted Successfully"
+        return res.status(200).json({
+            success: true,
+            message: "Labour deleted successfully"
         });
 
     } catch (error) {
+
         console.log(error);
 
-        res.status(500).json({
+        return res.status(500).json({
+            success: false,
             message: "Server Error"
         });
+
     }
 };
 
