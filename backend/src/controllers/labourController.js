@@ -80,6 +80,51 @@ if (existingLabour) {
         dailyWage: wage
     }
 });
+const files = req.files || {};
+console.log("UPLOADED FILES:", req.files);
+
+const uploadedDocuments = [];
+
+if (files.photo?.[0]) {
+    uploadedDocuments.push({
+        labourId: labour.id,
+        documentType: "PHOTO",
+        fileName: files.photo[0].filename,
+        filePath: `/uploads/labour/${files.photo[0].filename}`,
+        mimeType: files.photo[0].mimetype,
+        fileSize: files.photo[0].size
+    });
+}
+
+if (files.aadhaarDocument?.[0]) {
+    uploadedDocuments.push({
+        labourId: labour.id,
+        documentType: "AADHAAR",
+        fileName: files.aadhaarDocument[0].filename,
+        filePath: `/uploads/labour/${files.aadhaarDocument[0].filename}`,
+        mimeType: files.aadhaarDocument[0].mimetype,
+        fileSize: files.aadhaarDocument[0].size
+    });
+}
+
+if (files.documents?.length) {
+    for (const file of files.documents) {
+        uploadedDocuments.push({
+            labourId: labour.id,
+            documentType: "DOCUMENT",
+            fileName: file.filename,
+            filePath: `/uploads/labour/${file.filename}`,
+            mimeType: file.mimetype,
+            fileSize: file.size
+        });
+    }
+}
+
+if (uploadedDocuments.length > 0) {
+    await prisma.labourDocument.createMany({
+        data: uploadedDocuments
+    });
+}
 
         res.status(201).json({
     success: true,

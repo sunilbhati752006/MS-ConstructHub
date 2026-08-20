@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const path = require("path");
 
 const authRoutes = require("./routes/authRoutes");
 const labourRoutes = require("./routes/labourRoutes");
@@ -32,6 +33,8 @@ app.use(cors());
 app.use(helmet());
 app.use(limiter);
 app.use(express.json());
+
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // =========================
 // API Routes

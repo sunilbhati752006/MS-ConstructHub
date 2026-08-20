@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+const uploadFile = require("../middleware/uploadMiddleware");
+
 const {
     addLabour,
     getAllLabours,
@@ -17,6 +19,11 @@ router.post(
     "/add",
     authMiddleware,
     authorizeRoles("OWNER"),
+    uploadFile("labour").fields([
+        { name: "photo", maxCount: 1 },
+        { name: "aadhaarDocument", maxCount: 1 },
+        { name: "documents", maxCount: 5 }
+    ]),
     addLabour
 );
 
