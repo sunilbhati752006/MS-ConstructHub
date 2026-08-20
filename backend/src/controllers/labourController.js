@@ -81,7 +81,7 @@ if (existingLabour) {
     }
 });
 const files = req.files || {};
-console.log("UPLOADED FILES:", req.files);
+
 
 const uploadedDocuments = [];
 
@@ -172,10 +172,13 @@ const getLabourById = async (req, res) => {
         const { id } = req.params;
 
         const labour = await prisma.labour.findUnique({
-            where: {
-                id: Number(id)
-            }
-        });
+    where: {
+        id: Number(id)
+    },
+    include: {
+        documents: true
+    }
+});
 
         if (!labour) {
             return res.status(404).json({
@@ -259,10 +262,13 @@ if (isNaN(wage) || wage <= 0) {
     });
 }
         const labour = await prisma.labour.findUnique({
-            where: {
-                id: Number(id)
-            }
-        });
+    where: {
+        id: Number(id)
+    },
+    include: {
+        documents: true
+    }
+});
 
         if (!labour) {
             return res.status(404).json({
