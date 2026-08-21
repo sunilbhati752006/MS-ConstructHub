@@ -1,23 +1,55 @@
 const express = require("express");
-
 const router = express.Router();
 
 const {
-  addAttendance,
-  getAllAttendance,
-  getAttendanceById,
-  updateAttendance,
-  deleteAttendance,
+    addAttendance,
+    getAllAttendance,
+    getAttendanceById,
+    updateAttendance,
+    deleteAttendance,
 } = require("../controllers/attendanceController");
 
-router.post("/", addAttendance);
+const authMiddleware = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/roleMiddleware");
 
-router.get("/", getAllAttendance);
+// Add Attendance
+router.post(
+    "/",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    addAttendance
+);
 
-router.get("/:id", getAttendanceById);
+// Get All Attendance
+router.get(
+    "/",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    getAllAttendance
+);
 
-router.put("/:id", updateAttendance);
+// Get Attendance By ID
+router.get(
+    "/:id",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    getAttendanceById
+);
 
-router.delete("/:id", deleteAttendance);
+// Update Attendance
+router.put(
+    "/:id",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    updateAttendance
+);
+
+// Delete Attendance
+router.delete(
+    "/:id",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    deleteAttendance
+);
 
 module.exports = router;

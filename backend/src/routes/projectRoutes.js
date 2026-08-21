@@ -1,30 +1,55 @@
 const express = require("express");
-
 const router = express.Router();
 
 const {
-  addProject,
-  getAllProjects,
-  getProjectById,
-  updateProject,
-  deleteProject,
+    addProject,
+    getAllProjects,
+    getProjectById,
+    updateProject,
+    deleteProject,
 } = require("../controllers/projectController");
 
-const verifyToken = require("../middleware/authMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/roleMiddleware");
 
 // Add Project
-router.post("/", verifyToken, addProject);
+router.post(
+    "/",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    addProject
+);
 
 // Get All Projects
-router.get("/", verifyToken, getAllProjects);
+router.get(
+    "/",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    getAllProjects
+);
 
 // Get Project By ID
-router.get("/:id", verifyToken, getProjectById);
+router.get(
+    "/:id",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    getProjectById
+);
 
 // Update Project
-router.put("/:id", verifyToken, updateProject);
+router.put(
+    "/:id",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    updateProject
+);
 
 // Delete Project
-router.delete("/:id", verifyToken, deleteProject);
+router.delete(
+    "/:id",
+    authMiddleware,
+    authorizeRoles("OWNER"),
+    deleteProject
+);
 
 module.exports = router;
