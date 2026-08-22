@@ -7,6 +7,7 @@ import Payroll from "./Payroll";
 import Material from "./Material";
 import Expense from "./Expense";
 import Report from "./Report";
+import UsersPage from "./Users";
 
 import {
   LayoutDashboard,
@@ -494,6 +495,9 @@ if (currentPage === "expenses") {
 }
 if (currentPage === "reports") {
   return <Report token={token} />;
+}
+if (currentPage === "users") {
+  return <UsersPage token={token} />;
 }
 
   const module =
