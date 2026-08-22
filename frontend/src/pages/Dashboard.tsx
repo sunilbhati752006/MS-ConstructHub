@@ -3,6 +3,7 @@ import type { Page } from "../main";
 import Projects from "./Projects";
 import Labour from "./Labour";
 import Attendance from "./Attendance";
+import Payroll from "./Payroll";
 
 import {
   LayoutDashboard,
@@ -479,6 +480,10 @@ export default function Dashboard({
 if (currentPage === "attendance") {
   return <Attendance token={token} />;
 }
+if (currentPage === "payroll") {
+  return <Payroll token={token} />;
+}
+
 
   const module =
       modules[
