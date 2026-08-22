@@ -5,6 +5,8 @@ import Labour from "./Labour";
 import Attendance from "./Attendance";
 import Payroll from "./Payroll";
 import Material from "./Material";
+import Expense from "./Expense";
+import Report from "./Report";
 
 import {
   LayoutDashboard,
@@ -486,6 +488,12 @@ if (currentPage === "payroll") {
 }
 if (currentPage === "materials") {
   return <Material token={token} />;
+}
+if (currentPage === "expenses") {
+  return <Expense token={token} />;
+}
+if (currentPage === "reports") {
+  return <Report token={token} />;
 }
 
   const module =
