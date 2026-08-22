@@ -1,6 +1,8 @@
 ﻿import { useEffect, useState } from "react";
 import type { Page } from "../main";
 import Projects from "./Projects";
+import Labour from "./Labour";
+import Attendance from "./Attendance";
 
 import {
   LayoutDashboard,
@@ -469,6 +471,14 @@ export default function Dashboard({
     if (currentPage === "projects") {
     return <Projects token={token} />;
   }
+
+  if (currentPage === "labour") {
+  return <Labour token={token} />;
+}
+
+if (currentPage === "attendance") {
+  return <Attendance token={token} />;
+}
 
   const module =
       modules[

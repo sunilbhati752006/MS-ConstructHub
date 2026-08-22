@@ -8,13 +8,15 @@ const {
     getAllLabours,
     getLabourById,
     updateLabour,
-    deleteLabour
+    deleteLabour,
 } = require("../controllers/labourController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 
+// =========================
 // Add Labour
+// =========================
 router.post(
     "/add",
     authMiddleware,
@@ -22,12 +24,14 @@ router.post(
     uploadFile("labour").fields([
         { name: "photo", maxCount: 1 },
         { name: "aadhaarDocument", maxCount: 1 },
-        { name: "documents", maxCount: 5 }
+        { name: "documents", maxCount: 5 },
     ]),
     addLabour
 );
 
+// =========================
 // Get All Labours
+// =========================
 router.get(
     "/all",
     authMiddleware,
@@ -35,7 +39,9 @@ router.get(
     getAllLabours
 );
 
+// =========================
 // Get Labour By ID
+// =========================
 router.get(
     "/:id",
     authMiddleware,
@@ -43,7 +49,9 @@ router.get(
     getLabourById
 );
 
+// =========================
 // Update Labour
+// =========================
 router.put(
     "/update/:id",
     authMiddleware,
@@ -51,7 +59,9 @@ router.put(
     updateLabour
 );
 
+// =========================
 // Delete Labour
+// =========================
 router.delete(
     "/delete/:id",
     authMiddleware,
