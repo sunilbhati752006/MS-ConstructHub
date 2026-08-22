@@ -1,9 +1,10 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Page } from "../main";
 import Projects from "./Projects";
 import Labour from "./Labour";
 import Attendance from "./Attendance";
 import Payroll from "./Payroll";
+import Material from "./Material";
 
 import {
   LayoutDashboard,
@@ -483,7 +484,9 @@ if (currentPage === "attendance") {
 if (currentPage === "payroll") {
   return <Payroll token={token} />;
 }
-
+if (currentPage === "materials") {
+  return <Material token={token} />;
+}
 
   const module =
       modules[
@@ -774,9 +777,12 @@ if (currentPage === "payroll") {
             Construction Management Portal
           </span>
 
-          <span>© 2026</span>
+          <span>� 2026</span>
         </footer>
       </main>
     </div>
   );
 }
+
+
+
