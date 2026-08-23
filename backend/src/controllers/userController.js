@@ -94,7 +94,7 @@ if (!name || !userEmail || !mobile || !userPassword || !role) {
         message: "All fields are required",
       });
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 if (!emailRegex.test(userEmail)) {
   return res.status(400).json({
