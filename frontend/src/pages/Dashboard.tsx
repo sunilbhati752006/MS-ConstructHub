@@ -742,12 +742,14 @@ if (currentPage === "users") {
         {/* SIDEBAR FOOTER */}
         <div className="sidebar-footer">
           <div className="owner-avatar">
-            O
+            {user?.fullName
+  ? user.fullName.charAt(0).toUpperCase()
+  : "O"}
           </div>
 
           <div className="owner-info">
-            <strong>Owner</strong>
-            <span>Administrator</span>
+            <strong>{user?.fullName || "Owner"}</strong>
+            <span>{user?.role || "Administrator"}</span>
           </div>
 
           <button
@@ -835,13 +837,15 @@ if (currentPage === "users") {
 )}
             <div className="topbar-user">
               <div className="top-avatar">
-                O
+               {user?.fullName
+  ? user.fullName.charAt(0).toUpperCase()
+  : "O"}
               </div>
 
               <div>
-                <strong>Owner</strong>
+                <strong>{user?.fullName || "Owner"}</strong>
                 <small>
-                  Super Admin
+                {user?.role || "Super Admin"}
                 </small>
               </div>
             </div>
