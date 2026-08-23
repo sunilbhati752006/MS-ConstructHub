@@ -136,6 +136,14 @@ export default function Dashboard({
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const [user, setUser] = useState<{
+  fullName: string;
+  email: string;
+  mobileNumber: string;
+  role: string;
+} | null>(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -173,6 +181,32 @@ export default function Dashboard({
     };
 
     fetchDashboard();
+
+    const fetchCurrentUser = async () => {
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/auth/me",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to load user profile");
+    }
+
+    setUser(data.user);
+  } catch (err) {
+    console.error("Failed to load current user:", err);
+  }
+};
+
+fetchCurrentUser();
+
   }, [token]);
 
   const formatCurrency = (value: number) => {
@@ -756,13 +790,49 @@ if (currentPage === "users") {
 
           <div className="topbar-actions">
             <button
-              className="notification-button"
-              title="Notifications"
-            >
-              <Bell size={21} />
-              <span></span>
-            </button>
+  type="button"
+  className="notification-button"
+  title="Notifications"
+  onClick={() => setShowNotifications((prev) => !prev)}
+>
+  <Bell size={21} />
+  <span></span>
+</button>
+{showNotifications && (
+  <div className="notification-panel">
+    <div className="notification-panel-header">
+      <div>
+        <strong>Notifications</strong>
+        <small>Recent updates</small>
+      </div>
 
+      <button
+        type="button"
+        onClick={() => setShowNotifications(false)}
+      >
+        ×
+      </button>
+    </div>
+
+    <div className="notification-item">
+      <div className="notification-icon">!</div>
+
+      <div>
+        <strong>Pending Payroll</strong>
+        <p>Check pending payroll records.</p>
+      </div>
+    </div>
+
+    <div className="notification-item">
+      <div className="notification-icon">i</div>
+
+      <div>
+        <strong>System Ready</strong>
+        <p>MS ConstructHub is running normally.</p>
+      </div>
+    </div>
+  </div>
+)}
             <div className="topbar-user">
               <div className="top-avatar">
                 O

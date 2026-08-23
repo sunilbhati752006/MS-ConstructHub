@@ -1,7 +1,7 @@
 const prisma = require("../config/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 const register = async (req, res) => {
     try {
@@ -207,12 +207,11 @@ const changePassword = async (req, res) => {
 };
 
 // =======================================
-// Forgot Password
+// Forgot Password - Send OTP
 // =======================================
 const forgotPassword = async (req, res) => {
     try {
-
-        const { email } = req.body;
+        const email = req.body.email?.trim().toLowerCase();
 
         if (!email) {
             return res.status(400).json({
@@ -234,32 +233,78 @@ const forgotPassword = async (req, res) => {
             });
         }
 
-        // Generate Secure Token
-        const resetToken = crypto.randomBytes(32).toString("hex");
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Token Expiry (15 Minutes)
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        // OTP expires in 10 minutes
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-        // Delete old reset tokens
+        // Delete old OTP
         await prisma.passwordResetToken.deleteMany({
             where: {
                 userId: user.id
             }
         });
 
-        // Save new token
+        // Save OTP
         await prisma.passwordResetToken.create({
             data: {
-                token: resetToken,
+                token: otp,
                 expiresAt,
                 userId: user.id
             }
         });
 
+        // Gmail transporter
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_APP_PASSWORD
+            }
+        });
+
+        // Send OTP email
+        await transporter.sendMail({
+            from: `"MS ConstructHub" <${process.env.EMAIL_USER}>`,
+            to: user.email,
+            subject: "MS ConstructHub - Password Reset OTP",
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>MS ConstructHub</h2>
+
+                    <p>Hello ${user.fullName},</p>
+
+                    <p>
+                        We received a request to reset your password.
+                    </p>
+
+                    <p>Your OTP is:</p>
+
+                    <h1 style="letter-spacing: 8px;">
+                        ${otp}
+                    </h1>
+
+                    <p>
+                        This OTP will expire in <strong>10 minutes</strong>.
+                    </p>
+
+                    <p>
+                        If you did not request a password reset,
+                        please ignore this email.
+                    </p>
+
+                    <p>
+                        Regards,<br>
+                        MS ConstructHub Team
+                    </p>
+                </div>
+            `
+        });
+
         return res.status(200).json({
             success: true,
-            message: "Password reset token generated successfully",
-            resetToken
+            message: "OTP sent successfully to your email"
         });
 
     } catch (error) {
@@ -268,40 +313,61 @@ const forgotPassword = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Server Error"
+            message: "Unable to send OTP"
         });
-
     }
 };
 
 // =======================================
-// Reset Password
+// Reset Password - Verify OTP
 // =======================================
 const resetPassword = async (req, res) => {
     try {
+        const email = req.body.email?.trim().toLowerCase();
+        const otp = req.body.otp?.trim();
+        const newPassword = req.body.newPassword?.trim();
 
-        const { token, newPassword } = req.body;
-
-        if (!token || !newPassword) {
+        if (!email || !otp || !newPassword) {
             return res.status(400).json({
                 success: false,
-                message: "Token and new password are required"
+                message: "Email, OTP and new password are required"
             });
         }
 
-        const resetToken = await prisma.passwordResetToken.findUnique({
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+        if (!passwordRegex.test(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Password must be at least 8 characters and contain uppercase, lowercase, and a number"
+            });
+        }
+
+        const user = await prisma.user.findUnique({
             where: {
-                token
-            },
-            include: {
-                user: true
+                email
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const resetToken = await prisma.passwordResetToken.findFirst({
+            where: {
+                token: otp,
+                userId: user.id
             }
         });
 
         if (!resetToken) {
-            return res.status(404).json({
+            return res.status(400).json({
                 success: false,
-                message: "Invalid reset token"
+                message: "Invalid OTP"
             });
         }
 
@@ -315,13 +381,13 @@ const resetPassword = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Reset token has expired"
+                message: "OTP has expired"
             });
         }
 
         const isSamePassword = await bcrypt.compare(
             newPassword,
-            resetToken.user.password
+            user.password
         );
 
         if (isSamePassword) {
@@ -335,7 +401,7 @@ const resetPassword = async (req, res) => {
 
         await prisma.user.update({
             where: {
-                id: resetToken.user.id
+                id: user.id
             },
             data: {
                 password: hashedPassword
@@ -361,7 +427,6 @@ const resetPassword = async (req, res) => {
             success: false,
             message: "Server Error"
         });
-
     }
 };
 

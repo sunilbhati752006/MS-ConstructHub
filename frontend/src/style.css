@@ -167,7 +167,7 @@ input {
 
 .sidebar {
   width: 250px;
-  min-height: 100vh;
+ height: 100vh;
   position: fixed;
   left: 0;
   top: 0;
@@ -176,6 +176,7 @@ input {
   background: #0f172a;
   color: #cbd5e1;
   z-index: 20;
+  overflow: hidden;
 }
 
 .brand {
@@ -216,6 +217,7 @@ input {
   flex: 1;
   padding: 22px 12px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .nav-section {
@@ -357,6 +359,87 @@ input {
   display: flex;
   align-items: center;
   gap: 20px;
+  position: relative;
+}
+.notification-panel {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 320px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.notification-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.notification-panel-header strong {
+  display: block;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.notification-panel-header small {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.notification-panel-header button {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.notification-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.notification-item strong {
+  display: block;
+  color: #0f172a;
+  font-size: 12px;
+}
+
+.notification-item p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.notification-empty {
+  padding: 14px 16px;
+  text-align: center;
+  color: #64748b;
+  font-size: 11px;
 }
 
 .notification-button {
