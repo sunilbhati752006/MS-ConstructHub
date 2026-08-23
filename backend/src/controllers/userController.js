@@ -111,7 +111,7 @@ if (!mobileRegex.test(mobile)) {
   });
 }
 const passwordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
 if (!passwordRegex.test(userPassword)) {
   return res.status(400).json({
