@@ -137,6 +137,7 @@ export default function Dashboard({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showOwnerProfile, setShowOwnerProfile] = useState(false);
 
   const [user, setUser] = useState<{
   fullName: string;
@@ -741,25 +742,33 @@ if (currentPage === "users") {
 
         {/* SIDEBAR FOOTER */}
         <div className="sidebar-footer">
-          <div className="owner-avatar">
-            {user?.fullName
-  ? user.fullName.charAt(0).toUpperCase()
-  : "O"}
-          </div>
+  <button
+    type="button"
+    className="owner-profile-button"
+    onClick={() => setShowOwnerProfile(true)}
+    title="View Owner Profile"
+  >
+    <div className="owner-avatar">
+      {user?.fullName
+        ? user.fullName.charAt(0).toUpperCase()
+        : "O"}
+    </div>
 
-          <div className="owner-info">
-            <strong>{user?.fullName || "Owner"}</strong>
-            <span>{user?.role || "Administrator"}</span>
-          </div>
+    <div className="owner-info">
+      <strong>{user?.fullName || "Owner"}</strong>
+      <span>{user?.role || "Administrator"}</span>
+    </div>
+  </button>
 
-          <button
-            className="sidebar-logout"
-            onClick={onLogout}
-            title="Logout"
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
+  <button
+    type="button"
+    className="sidebar-logout"
+    onClick={onLogout}
+    title="Logout"
+  >
+    <LogOut size={18} />
+  </button>
+</div>
       </aside>
 
       {/* MAIN CONTENT */}
@@ -835,7 +844,12 @@ if (currentPage === "users") {
     </div>
   </div>
 )}
-            <div className="topbar-user">
+            <div
+  className="topbar-user"
+  onClick={() => setShowOwnerProfile(true)}
+  style={{ cursor: "pointer" }}
+  title="View Owner Profile"
+>
               <div className="top-avatar">
                {user?.fullName
   ? user.fullName.charAt(0).toUpperCase()
@@ -865,10 +879,85 @@ if (currentPage === "users") {
 
           <span>� 2026</span>
         </footer>
-      </main>
+            </main>
+
+      {showOwnerProfile && (
+        <div
+          className="project-modal-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowOwnerProfile(false);
+            }
+          }}
+        >
+          <div className="project-modal">
+            <div className="project-modal-header">
+              <div>
+                <h2>Owner Profile</h2>
+                <p>Your logged-in account details.</p>
+              </div>
+
+              <button
+                type="button"
+                className="project-modal-close"
+                onClick={() => setShowOwnerProfile(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="project-form">
+              <div className="project-form-grid">
+                <div className="project-form-group full">
+                  <label>Full Name</label>
+                  <input
+                    type="text"
+                    value={user?.fullName || "Owner"}
+                    readOnly
+                  />
+                </div>
+
+                <div className="project-form-group">
+                  <label>Email</label>
+                  <input
+                    type="text"
+                    value={user?.email || "-"}
+                    readOnly
+                  />
+                </div>
+
+                <div className="project-form-group">
+                  <label>Mobile Number</label>
+                  <input
+                    type="text"
+                    value={user?.mobileNumber || "-"}
+                    readOnly
+                  />
+                </div>
+
+                <div className="project-form-group">
+                  <label>Role</label>
+                  <input
+                    type="text"
+                    value={user?.role || "Administrator"}
+                    readOnly
+                  />
+                </div>
+              </div>
+
+              <div className="project-form-footer">
+                <button
+                  type="button"
+                  className="project-cancel-button"
+                  onClick={() => setShowOwnerProfile(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-
-

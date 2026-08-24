@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
+
 import {
   Plus,
   Search,
@@ -56,8 +62,15 @@ export default function Users({ token }: UsersProps) {
   const [editingId, setEditingId] =
     useState<number | null>(null);
 
+  const [selectedUser, setSelectedUser] =
+    useState<User | null>(null);
+
   const [form, setForm] =
     useState<UserForm>(emptyForm);
+
+  // =========================
+  // FETCH USERS
+  // =========================
 
   const fetchUsers = async () => {
     const response = await fetch(API_URL, {
@@ -70,8 +83,7 @@ export default function Users({ token }: UsersProps) {
 
     if (!response.ok) {
       throw new Error(
-        data.message ||
-          "Failed to load users"
+        data.message || "Failed to load users"
       );
     }
 
@@ -99,10 +111,12 @@ export default function Users({ token }: UsersProps) {
     loadUsers();
   }, [token]);
 
+  // =========================
+  // FILTER USERS
+  // =========================
+
   const filteredUsers = useMemo(() => {
-    const query = search
-      .toLowerCase()
-      .trim();
+    const query = search.toLowerCase().trim();
 
     if (!query) {
       return users;
@@ -121,6 +135,10 @@ export default function Users({ token }: UsersProps) {
     );
   }, [users, search]);
 
+  // =========================
+  // SUMMARY
+  // =========================
+
   const activeUsers = users.filter(
     (user) => user.isActive
   ).length;
@@ -133,12 +151,20 @@ export default function Users({ token }: UsersProps) {
     (user) => user.role === "MANAGER"
   ).length;
 
+  // =========================
+  // ADD USER MODAL
+  // =========================
+
   const openAddModal = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm });
     setError("");
     setShowModal(true);
   };
+
+  // =========================
+  // EDIT USER MODAL
+  // =========================
 
   const openEditModal = (user: User) => {
     setEditingId(user.id);
@@ -158,13 +184,22 @@ export default function Users({ token }: UsersProps) {
     setShowModal(true);
   };
 
+  // =========================
+  // CLOSE ADD/EDIT MODAL
+  // =========================
+
   const closeModal = () => {
     if (saving) return;
 
     setShowModal(false);
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm });
+    setError("");
   };
+
+  // =========================
+  // FORM CHANGE
+  // =========================
 
   const handleChange = (
     field: keyof UserForm,
@@ -176,8 +211,12 @@ export default function Users({ token }: UsersProps) {
     }));
   };
 
+  // =========================
+  // CREATE / UPDATE USER
+  // =========================
+
   const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
 
@@ -254,6 +293,7 @@ export default function Users({ token }: UsersProps) {
       }
 
       closeModal();
+
       await fetchUsers();
     } catch (err) {
       setError(
@@ -265,6 +305,10 @@ export default function Users({ token }: UsersProps) {
       setSaving(false);
     }
   };
+
+  // =========================
+  // ACTIVATE / DEACTIVATE
+  // =========================
 
   const toggleUserStatus = async (
     user: User
@@ -317,12 +361,18 @@ export default function Users({ token }: UsersProps) {
     }
   };
 
+  // =========================
+  // FORMAT DATE
+  // =========================
+
   const formatDate = (
     value: string
   ) => {
     if (!value) return "-";
 
-    return new Date(value).toLocaleDateString(
+    return new Date(
+      value
+    ).toLocaleDateString(
       "en-IN",
       {
         day: "2-digit",
@@ -331,6 +381,10 @@ export default function Users({ token }: UsersProps) {
       }
     );
   };
+
+  // =========================
+  // LOADING
+  // =========================
 
   if (loading) {
     return (
@@ -343,10 +397,16 @@ export default function Users({ token }: UsersProps) {
     );
   }
 
+  // =========================
+  // PAGE
+  // =========================
+
   return (
     <>
       <section className="dashboard-section">
         <div className="projects-page">
+
+          {/* TOOLBAR */}
 
           <div className="projects-toolbar">
 
@@ -370,6 +430,7 @@ export default function Users({ token }: UsersProps) {
             </div>
 
             <button
+              type="button"
               className="project-add-button"
               onClick={openAddModal}
             >
@@ -379,11 +440,15 @@ export default function Users({ token }: UsersProps) {
 
           </div>
 
+          {/* ERROR */}
+
           {error && !showModal && (
             <div className="projects-alert">
               {error}
             </div>
           )}
+
+          {/* SUMMARY CARDS */}
 
           <div className="projects-summary-grid">
 
@@ -449,6 +514,8 @@ export default function Users({ token }: UsersProps) {
 
           </div>
 
+          {/* USER TABLE */}
+
           <div className="projects-content-panel">
 
             <div className="projects-list-header">
@@ -460,7 +527,8 @@ export default function Users({ token }: UsersProps) {
                   {filteredUsers.length} user
                   {filteredUsers.length === 1
                     ? ""
-                    : "s"} found
+                    : "s"}{" "}
+                  found
                 </p>
               </div>
 
@@ -483,7 +551,10 @@ export default function Users({ token }: UsersProps) {
 
             </div>
 
+            {/* EMPTY STATE */}
+
             {filteredUsers.length === 0 ? (
+
               <div className="projects-empty">
 
                 <div className="projects-empty-icon">
@@ -504,6 +575,7 @@ export default function Users({ token }: UsersProps) {
 
                 {!search && (
                   <button
+                    type="button"
                     className="project-add-button"
                     onClick={openAddModal}
                   >
@@ -513,7 +585,9 @@ export default function Users({ token }: UsersProps) {
                 )}
 
               </div>
+
             ) : (
+
               <div className="projects-table-wrapper">
 
                 <table className="projects-table">
@@ -533,9 +607,13 @@ export default function Users({ token }: UsersProps) {
 
                     {filteredUsers.map(
                       (user) => (
+
                         <tr key={user.id}>
 
+                          {/* USER */}
+
                           <td>
+
                             <div className="project-name-cell">
 
                               <div className="project-table-icon">
@@ -545,6 +623,7 @@ export default function Users({ token }: UsersProps) {
                               </div>
 
                               <div>
+
                                 <strong>
                                   {user.fullName}
                                 </strong>
@@ -552,48 +631,78 @@ export default function Users({ token }: UsersProps) {
                                 <span>
                                   User #{user.id}
                                 </span>
+
                               </div>
 
                             </div>
+
                           </td>
 
+                          {/* CONTACT */}
+
                           <td>
+
                             <div
                               style={{
-                                display:
-                                  "flex",
+                                display: "flex",
                                 flexDirection:
                                   "column",
                                 gap: "5px",
                               }}
                             >
+
                               <span>
                                 {user.email}
                               </span>
 
                               <span>
-                                {
-                                  user.mobileNumber
-                                }
+                                {user.mobileNumber}
                               </span>
+
                             </div>
+
                           </td>
 
+                          {/* ROLE */}
+
                           <td>
-                            <span
-                              className={
-                                user.role ===
-                                "OWNER"
-                                  ? "project-status active"
-                                  : "project-status planned"
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSelectedUser(user)
                               }
+                              style={{
+                                border: "none",
+                                cursor: "pointer",
+                                background:
+                                  "transparent",
+                                padding: 0,
+                              }}
                             >
-                              <span></span>
-                              {user.role}
-                            </span>
+
+                              <span
+                                className={
+                                  user.role === "OWNER"
+                                    ? "project-status active"
+                                    : "project-status planned"
+                                }
+                              >
+
+                                <span></span>
+
+                                {user.role}
+
+                              </span>
+
+                            </button>
+
                           </td>
 
+                          {/* STATUS */}
+
                           <td>
+
                             <span
                               className={
                                 user.isActive
@@ -601,12 +710,18 @@ export default function Users({ token }: UsersProps) {
                                   : "project-status completed"
                               }
                             >
+
                               <span></span>
+
                               {user.isActive
                                 ? "ACTIVE"
                                 : "INACTIVE"}
+
                             </span>
+
                           </td>
+
+                          {/* CREATED */}
 
                           <td>
                             {formatDate(
@@ -614,10 +729,14 @@ export default function Users({ token }: UsersProps) {
                             )}
                           </td>
 
+                          {/* ACTIONS */}
+
                           <td>
+
                             <div className="project-actions">
 
                               <button
+                                type="button"
                                 className="project-action edit"
                                 title="Edit User"
                                 onClick={() =>
@@ -632,6 +751,7 @@ export default function Users({ token }: UsersProps) {
                               </button>
 
                               <button
+                                type="button"
                                 className="project-action"
                                 title={
                                   user.isActive
@@ -650,9 +770,11 @@ export default function Users({ token }: UsersProps) {
                               </button>
 
                             </div>
+
                           </td>
 
                         </tr>
+
                       )
                     )}
 
@@ -661,6 +783,7 @@ export default function Users({ token }: UsersProps) {
                 </table>
 
               </div>
+
             )}
 
           </div>
@@ -668,16 +791,23 @@ export default function Users({ token }: UsersProps) {
         </div>
       </section>
 
+      {/* =====================================================
+          ADD / EDIT USER MODAL
+      ===================================================== */}
+
       {showModal && (
+
         <div
           className="project-modal-overlay"
           onMouseDown={(event) => {
+
             if (
               event.target ===
               event.currentTarget
             ) {
               closeModal();
             }
+
           }}
         >
 
@@ -686,6 +816,7 @@ export default function Users({ token }: UsersProps) {
             <div className="project-modal-header">
 
               <div>
+
                 <h2>
                   {editingId
                     ? "Edit User"
@@ -696,9 +827,11 @@ export default function Users({ token }: UsersProps) {
                   Manage user account and
                   access details.
                 </p>
+
               </div>
 
               <button
+                type="button"
                 className="project-modal-close"
                 onClick={closeModal}
                 disabled={saving}
@@ -721,6 +854,8 @@ export default function Users({ token }: UsersProps) {
 
               <div className="project-form-grid">
 
+                {/* FULL NAME */}
+
                 <div className="project-form-group full">
 
                   <label>
@@ -740,8 +875,7 @@ export default function Users({ token }: UsersProps) {
                       onChange={(event) =>
                         handleChange(
                           "fullName",
-                          event.target
-                            .value
+                          event.target.value
                         )
                       }
                       required
@@ -751,9 +885,13 @@ export default function Users({ token }: UsersProps) {
 
                 </div>
 
+                {/* EMAIL */}
+
                 <div className="project-form-group">
 
-                  <label>Email</label>
+                  <label>
+                    Email
+                  </label>
 
                   <div className="project-input-wrapper">
 
@@ -768,8 +906,7 @@ export default function Users({ token }: UsersProps) {
                       onChange={(event) =>
                         handleChange(
                           "email",
-                          event.target
-                            .value
+                          event.target.value
                         )
                       }
                       required
@@ -778,6 +915,8 @@ export default function Users({ token }: UsersProps) {
                   </div>
 
                 </div>
+
+                {/* MOBILE */}
 
                 <div className="project-form-group">
 
@@ -799,8 +938,7 @@ export default function Users({ token }: UsersProps) {
                       onChange={(event) =>
                         handleChange(
                           "mobileNumber",
-                          event.target
-                            .value
+                          event.target.value
                         )
                       }
                       required
@@ -810,7 +948,10 @@ export default function Users({ token }: UsersProps) {
 
                 </div>
 
+                {/* PASSWORD */}
+
                 {!editingId && (
+
                   <div className="project-form-group full">
 
                     <label>
@@ -826,30 +967,34 @@ export default function Users({ token }: UsersProps) {
                       onChange={(event) =>
                         handleChange(
                           "password",
-                          event.target
-                            .value
+                          event.target.value
                         )
                       }
                       required
                     />
 
                   </div>
+
                 )}
+
+                {/* ROLE */}
 
                 <div className="project-form-group">
 
-                  <label>Role</label>
+                  <label>
+                    Role
+                  </label>
 
                   <select
                     value={form.role}
                     onChange={(event) =>
                       handleChange(
                         "role",
-                        event.target
-                          .value
+                        event.target.value
                       )
                     }
                   >
+
                     <option value="MANAGER">
                       MANAGER
                     </option>
@@ -857,11 +1002,14 @@ export default function Users({ token }: UsersProps) {
                     <option value="OWNER">
                       OWNER
                     </option>
+
                   </select>
 
                 </div>
 
               </div>
+
+              {/* FOOTER */}
 
               <div className="project-form-footer">
 
@@ -879,6 +1027,7 @@ export default function Users({ token }: UsersProps) {
                   className="project-save-button"
                   disabled={saving}
                 >
+
                   {saving ? (
                     "Saving..."
                   ) : (
@@ -890,6 +1039,7 @@ export default function Users({ token }: UsersProps) {
                         : "Create User"}
                     </>
                   )}
+
                 </button>
 
               </div>
@@ -899,7 +1049,237 @@ export default function Users({ token }: UsersProps) {
           </div>
 
         </div>
+
       )}
+
+      {/* =====================================================
+          USER PROFILE MODAL
+      ===================================================== */}
+
+      {selectedUser && (
+
+        <div
+          className="project-modal-overlay"
+          onMouseDown={(event) => {
+
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              setSelectedUser(null);
+            }
+
+          }}
+        >
+
+          <div className="project-modal">
+
+            <div className="project-modal-header">
+
+              <div>
+
+                <h2>
+                  User Profile
+                </h2>
+
+                <p>
+                  View user account and
+                  access details.
+                </p>
+
+              </div>
+
+              <button
+                type="button"
+                className="project-modal-close"
+                onClick={() =>
+                  setSelectedUser(null)
+                }
+              >
+                <X size={20} />
+              </button>
+
+            </div>
+
+            <div className="project-form">
+
+              <div className="project-form-grid">
+
+                {/* FULL NAME */}
+
+                <div className="project-form-group full">
+
+                  <label>
+                    Full Name
+                  </label>
+
+                  <div className="project-input-wrapper">
+
+                    <UserCog size={18} />
+
+                    <input
+                      type="text"
+                      value={
+                        selectedUser.fullName
+                      }
+                      readOnly
+                    />
+
+                  </div>
+
+                </div>
+
+                {/* EMAIL */}
+
+                <div className="project-form-group">
+
+                  <label>
+                    Email
+                  </label>
+
+                  <div className="project-input-wrapper">
+
+                    <Mail size={18} />
+
+                    <input
+                      type="text"
+                      value={
+                        selectedUser.email
+                      }
+                      readOnly
+                    />
+
+                  </div>
+
+                </div>
+
+                {/* MOBILE */}
+
+                <div className="project-form-group">
+
+                  <label>
+                    Mobile Number
+                  </label>
+
+                  <div className="project-input-wrapper">
+
+                    <Phone size={18} />
+
+                    <input
+                      type="text"
+                      value={
+                        selectedUser.mobileNumber
+                      }
+                      readOnly
+                    />
+
+                  </div>
+
+                </div>
+
+                {/* ROLE */}
+
+                <div className="project-form-group">
+
+                  <label>
+                    Role
+                  </label>
+
+                  <input
+                    type="text"
+                    value={
+                      selectedUser.role
+                    }
+                    readOnly
+                  />
+
+                </div>
+
+                {/* STATUS */}
+
+                <div className="project-form-group">
+
+                  <label>
+                    Status
+                  </label>
+
+                  <input
+                    type="text"
+                    value={
+                      selectedUser.isActive
+                        ? "ACTIVE"
+                        : "INACTIVE"
+                    }
+                    readOnly
+                  />
+
+                </div>
+
+                {/* CREATED */}
+
+                <div className="project-form-group full">
+
+                  <label>
+                    Created Date
+                  </label>
+
+                  <input
+                    type="text"
+                    value={formatDate(
+                      selectedUser.createdAt
+                    )}
+                    readOnly
+                  />
+
+                </div>
+
+              </div>
+
+              {/* PROFILE FOOTER */}
+
+              <div className="project-form-footer">
+
+                <button
+                  type="button"
+                  className="project-cancel-button"
+                  onClick={() =>
+                    setSelectedUser(null)
+                  }
+                >
+                  Close
+                </button>
+
+                <button
+                  type="button"
+                  className="project-save-button"
+                  onClick={() => {
+
+                    const user =
+                      selectedUser;
+
+                    setSelectedUser(null);
+
+                    openEditModal(user);
+
+                  }}
+                >
+
+                  <Pencil size={18} />
+
+                  Edit User
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
     </>
   );
 }

@@ -1215,6 +1215,17 @@ input {
 .project-status.planned > span {
   background: #f97316;
 }
+.user-role-button {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+}
+
+.user-role-button:hover {
+  opacity: 0.85;
+}
 
 .project-actions {
   display: flex;
@@ -1490,4 +1501,20 @@ input {
   .project-form {
     padding: 18px;
   }
+}
+.owner-profile-button {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.owner-profile-button:hover .owner-info strong {
+  color: #ffffff;
 }
