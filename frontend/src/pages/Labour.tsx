@@ -77,6 +77,8 @@ export default function Labour({ token }: LabourProps) {
   const [aadhaarDocument, setAadhaarDocument] =
     useState<File | null>(null);
   const [documents, setDocuments] = useState<File[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<LabourDocument[]>([]);
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -632,48 +634,65 @@ export default function Labour({ token }: LabourProps) {
                           </td>
 
                           {/* WAGE */}
-                          <td>
-                            <strong className="project-budget">
-                              {formatCurrency(
-                                Number(
-                                  labour.dailyWage
-                                )
-                              )}
-                              <span
-                                style={{
-                                  fontWeight: 400,
-                                  color: "#64748b",
-                                  fontSize: "12px",
-                                  marginLeft: "4px",
-                                }}
-                              >
-                                /day
-                              </span>
-                            </strong>
-                          </td>
+<td>
+  <strong className="project-budget">
+    {formatCurrency(Number(labour.dailyWage))}
+    <span
+      style={{
+        fontWeight: 400,
+        color: "#64748b",
+        fontSize: "12px",
+        marginLeft: "4px",
+      }}
+    >
+      /day
+    </span>
+  </strong>
+</td>
 
-                          {/* DOCUMENTS */}
-                          <td>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "7px",
-                                color: "#475569",
-                              }}
-                            >
-                              <FileText size={17} />
+{/* DOCUMENTS */}
+<td>
+  {docs.length > 0 ? (
+    <button
+      type="button"
+      onClick={() => {
+        setSelectedDocuments(docs);
+        setShowDocumentsModal(true);
+      }}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "7px",
+        border: "none",
+        background: "transparent",
+        color: "#2563eb",
+        cursor: "pointer",
+        fontWeight: 600,
+        padding: 0,
+      }}
+    >
+      <FileText size={17} />
+      <span>
+        {docs.length} file
+        {docs.length === 1 ? "" : "s"}
+      </span>
+    </button>
+  ) : (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "7px",
+        color: "#94a3b8",
+      }}
+    >
+      <FileText size={17} />
+      0 files
+    </span>
+  )}
+</td>
 
-                              <span>
-                                {docs.length} file
-                                {docs.length === 1
-                                  ? ""
-                                  : "s"}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* ACTIONS */}
+                           {/* ACTIONS */}
                           <td>
                             <div className="project-actions">
 
@@ -1051,6 +1070,134 @@ export default function Labour({ token }: LabourProps) {
 
           </div>
 
+        </div>
+            )}
+
+      {/* DOCUMENTS VIEWER MODAL */}
+      {showDocumentsModal && (
+        <div
+          className="project-modal-overlay"
+          onClick={() => setShowDocumentsModal(false)}
+        >
+          <div
+            className="project-modal"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "650px",
+              maxHeight: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <div className="project-modal-header">
+              <div>
+                <h3>Labour Documents</h3>
+                <p>
+                  {selectedDocuments.length} document
+                  {selectedDocuments.length === 1 ? "" : "s"} available
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowDocumentsModal(false)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  fontSize: "26px",
+                  cursor: "pointer",
+                  color: "#64748b",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ padding: "20px" }}>
+              {selectedDocuments.map((document) => {
+                const documentUrl = `http://localhost:5000${document.filePath}`;
+
+                return (
+                  <div
+                    key={document.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "15px",
+                      padding: "14px",
+                      marginBottom: "10px",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "10px",
+                      background: "#f8fafc",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                        minWidth: 0,
+                      }}
+                    >
+                      <FileText
+                        size={22}
+                        style={{ flexShrink: 0 }}
+                      />
+
+                      <div style={{ minWidth: 0 }}>
+                        <strong
+                          style={{
+                            display: "block",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {document.fileName}
+                        </strong>
+
+                        <span
+                          style={{
+                            display: "block",
+                            marginTop: "4px",
+                            fontSize: "12px",
+                            color: "#64748b",
+                          }}
+                        >
+                          {document.documentType}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="project-save-button"
+                      onClick={() =>
+                        window.open(
+                          documentUrl,
+                          "_blank",
+                          "noopener,noreferrer"
+                        )
+                      }
+                    >
+                      View
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="project-form-footer">
+              <button
+                type="button"
+                className="project-cancel-button"
+                onClick={() => setShowDocumentsModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

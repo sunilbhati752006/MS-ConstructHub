@@ -145,10 +145,13 @@ const getAllLabours = async (req, res) => {
     try {
 
         const labours = await prisma.labour.findMany({
-            orderBy: {
-                id: "desc"
-            }
-        });
+    include: {
+        documents: true
+    },
+    orderBy: {
+        id: "desc"
+    }
+});
 
        res.status(200).json({
     success: true,
