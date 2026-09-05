@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { API_URL } from "../config";
 import {
   Plus,
   Search,
@@ -50,7 +51,6 @@ const emptyForm: AttendanceForm = {
   status: "PRESENT",
 };
 
-const API_URL = "http://localhost:5000/api";
 
 export default function Attendance({
   token,

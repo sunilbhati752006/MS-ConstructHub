@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { API_URL as API_BASE_URL } from "../config";
+const API_URL = `${API_BASE_URL}/labour`;
 import {
+  
   Plus,
   Search,
   Users,
@@ -58,7 +61,6 @@ const emptyForm: LabourForm = {
   dailyWage: "",
 };
 
-const API_URL = "http://localhost:5000/api/labour";
 
 export default function Labour({ token }: LabourProps) {
   const [labours, setLabours] = useState<Labour[]>([]);
@@ -1115,8 +1117,7 @@ export default function Labour({ token }: LabourProps) {
 
             <div style={{ padding: "20px" }}>
               {selectedDocuments.map((document) => {
-                const documentUrl = `http://localhost:5000${document.filePath}`;
-
+                const documentUrl = `${API_BASE_URL.replace("/api", "")}${document.filePath}`;
                 return (
                   <div
                     key={document.id}

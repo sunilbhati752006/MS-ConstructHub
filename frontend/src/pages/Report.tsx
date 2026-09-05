@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { API_URL as API_BASE_URL } from "../config";
+const API_URL = `${API_BASE_URL}/reports`;
 import {
   BarChart3,
   Users,
@@ -13,7 +15,7 @@ import {
 interface ReportProps {
   token: string;
 }
-
+ 
 type ReportType =
   | "labour"
   | "projects"
@@ -101,7 +103,6 @@ interface Material {
   };
 }
 
-const API_URL = "http://localhost:5000/api/reports";
 
 export default function Report({ token }: ReportProps) {
   const [activeReport, setActiveReport] =

@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { API_URL } from "../config";
 import {
   Plus,
   Search,
@@ -81,7 +82,7 @@ export default function Projects({ token }: ProjectsProps) {
       setError("");
 
       const response = await fetch(
-        "http://localhost:5000/api/projects",
+        `${API_URL}/projects`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -198,8 +199,8 @@ export default function Projects({ token }: ProjectsProps) {
       setError("");
 
       const url = editingId
-        ? `http://localhost:5000/api/projects/${editingId}`
-        : "http://localhost:5000/api/projects";
+        ? `${API_URL}/projects/${editingId}`
+        : `${API_URL}/projects`;
 
       const method = editingId ? "PUT" : "POST";
 
@@ -252,7 +253,7 @@ export default function Projects({ token }: ProjectsProps) {
       setError("");
 
       const response = await fetch(
-        `http://localhost:5000/api/projects/${id}`,
+        `${API_URL}/projects/${id}`,
         {
           method: "DELETE",
           headers: {

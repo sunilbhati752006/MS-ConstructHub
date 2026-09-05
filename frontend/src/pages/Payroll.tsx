@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { API_URL } from "../config";
 import {
   Plus,
   Search,
@@ -52,7 +53,7 @@ interface PayrollForm {
   year: string;
 }
 
-const API_URL = "http://localhost:5000/api";
+
 
 const emptyForm: PayrollForm = {
   labourId: "",

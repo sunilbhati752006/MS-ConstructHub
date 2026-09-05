@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_URL } from "../config";
 
 interface LoginProps {
   onLoginSuccess: (token: string) => void;
@@ -37,8 +38,9 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     setLoading(true);
 
     try {
+      console.log("API_URL:", API_URL);
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        `${API_URL}/auth/login`,
         {
           method: "POST",
           headers: {
@@ -87,7 +89,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/forgot-password",
+       `${API_URL}/auth/forgot-password`,
         {
           method: "POST",
           headers: {
@@ -147,7 +149,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/reset-password",
+       `${API_URL}/auth/reset-password`,
         {
           method: "POST",
           headers: {

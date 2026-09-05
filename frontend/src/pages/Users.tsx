@@ -1,3 +1,5 @@
+import { API_URL as API_BASE_URL } from "../config";
+const API_URL = `${API_BASE_URL}/users`;
 import {
   useEffect,
   useMemo,
@@ -40,7 +42,7 @@ interface UserForm {
   role: "OWNER" | "MANAGER";
 }
 
-const API_URL = "http://localhost:5000/api/users";
+
 
 const emptyForm: UserForm = {
   fullName: "",
