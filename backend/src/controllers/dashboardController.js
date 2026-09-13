@@ -15,6 +15,9 @@ const getDashboardSummary = async (req, res) => {
 
     tomorrow.setDate(today.getDate() + 1);
 
+    const role = String(req.user?.role || "").toUpperCase();
+    const isOwner = role === "OWNER";
+
     const [
       totalProjects,
       activeProjects,
@@ -44,9 +47,15 @@ const getDashboardSummary = async (req, res) => {
 
       prisma.material.count(),
 
-      prisma.expense.findMany(),
+      // Financial data is fetched ONLY for OWNER
+      isOwner
+        ? prisma.expense.findMany()
+        : Promise.resolve([]),
 
-      prisma.payroll.findMany(),
+      // Financial data is fetched ONLY for OWNER
+      isOwner
+        ? prisma.payroll.findMany()
+        : Promise.resolve([]),
 
       prisma.material.findMany(),
 
@@ -115,30 +124,38 @@ const getDashboardSummary = async (req, res) => {
         todayAbsent++;
       }
     });
-        // ===========================
+
+    // ===========================
     // Final Response
     // ===========================
 
-    res.status(200).json({
-      success: true,
+    const dashboard = {
+      projects: {
+        total: totalProjects,
+        active: activeProjects,
+        completed: completedProjects,
+      },
 
-      dashboard: {
-        projects: {
-          total: totalProjects,
-          active: activeProjects,
-          completed: completedProjects,
-        },
+      labours: {
+        total: totalLabours,
+      },
 
-        labours: {
-          total: totalLabours,
-        },
+      attendance: {
+        present: todayPresent,
+        halfDay: todayHalfDay,
+        absent: todayAbsent,
+      },
 
-        attendance: {
-          present: todayPresent,
-          halfDay: todayHalfDay,
-          absent: todayAbsent,
-        },
+      inventory: {
+        totalMaterials,
+        // Inventory value is OWNER-only
+        ...(isOwner && {
+          totalInventoryValue,
+        }),
+      },
 
+      // Financial information is OWNER-only
+      ...(isOwner && {
         payroll: {
           totalAmount: totalPayroll,
           paidAmount: paidPayroll,
@@ -148,12 +165,12 @@ const getDashboardSummary = async (req, res) => {
         expenses: {
           totalAmount: totalExpenses,
         },
+      }),
+    };
 
-        inventory: {
-          totalMaterials,
-          totalInventoryValue,
-        },
-      },
+    res.status(200).json({
+      success: true,
+      dashboard,
     });
   } catch (error) {
     console.error("Dashboard Error:", error);

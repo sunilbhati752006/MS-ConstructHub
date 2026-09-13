@@ -11,12 +11,13 @@ const {
 
 const authMiddleware = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
+const authorizePermissions = require("../middleware/authorizePermissions");
 
 // Add Project
 router.post(
     "/",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("projects.create"),
     addProject
 );
 
@@ -24,7 +25,7 @@ router.post(
 router.get(
     "/",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("projects.view"),
     getAllProjects
 );
 
@@ -32,7 +33,7 @@ router.get(
 router.get(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("projects.view"),
     getProjectById
 );
 
@@ -40,7 +41,7 @@ router.get(
 router.put(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+   authorizePermissions("projects.update"),
     updateProject
 );
 

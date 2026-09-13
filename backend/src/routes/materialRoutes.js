@@ -12,12 +12,13 @@ const {
 
 const authMiddleware = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
+const authorizePermissions = require("../middleware/authorizePermissions");
 
 // Add Material
 router.post(
     "/",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("materials.create"),
     addMaterial
 );
 
@@ -25,7 +26,7 @@ router.post(
 router.get(
     "/",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("materials.view"),
     getAllMaterials
 );
 
@@ -33,7 +34,7 @@ router.get(
 router.get(
     "/summary",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("materials.view"),
     getInventorySummary
 );
 
@@ -41,7 +42,7 @@ router.get(
 router.get(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("materials.view"),
     getMaterialById
 );
 
@@ -49,7 +50,7 @@ router.get(
 router.put(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("materials.update"),
     updateMaterial
 );
 
@@ -57,7 +58,7 @@ router.put(
 router.delete(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("materials.delete"),
     deleteMaterial
 );
 

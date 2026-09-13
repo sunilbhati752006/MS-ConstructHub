@@ -56,19 +56,19 @@ interface DashboardData {
     absent: number;
   };
 
-  payroll: {
+  payroll?: {
     totalAmount: number;
     paidAmount: number;
     pendingAmount: number;
   };
 
-  expenses: {
+  expenses?: {
     totalAmount: number;
   };
 
   inventory: {
     totalMaterials: number;
-    totalInventoryValue: number;
+    totalInventoryValue?: number;
   };
 }
 
@@ -349,6 +349,15 @@ const completedProjectPercentage =
       )
     : 0;
 
+  const payrollTotalAmount =
+    dashboard.payroll?.totalAmount ?? 0;
+  const payrollPaidAmount =
+    dashboard.payroll?.paidAmount ?? 0;
+  const expensesTotalAmount =
+    dashboard.expenses?.totalAmount ?? 0;
+
+  const isOwner = user?.role?.toUpperCase() === "OWNER";
+
   const renderDashboardHome = () => {
     return (
       <>
@@ -443,62 +452,70 @@ const completedProjectPercentage =
               </div>
             </div>
 
-            {/* PAYROLL */}
-            <div className="dashboard-kpi-card kpi-green">
-              <div className="kpi-content">
-                <span className="kpi-label">
-                  Payroll (This Month)
-                </span>
+            {isOwner && (
+              <>
+                {/* PAYROLL */}
+                <div className="dashboard-kpi-card kpi-green">
+                  <div className="kpi-content">
+                    <span className="kpi-label">
+                      Payroll (This Month)
+                    </span>
 
-                <strong>
-                  {formatCurrency(
-                    dashboard.payroll.totalAmount
-                  )}
-                </strong>
+                    <strong>
+                      {formatCurrency(
+                        payrollTotalAmount
+                      )}
+                    </strong>
 
-                <small>
-                  Paid{" "}
-                  {formatCurrency(
-                    dashboard.payroll.paidAmount
-                  )}
-                </small>
-              </div>
+                    <small>
+                      Paid{" "}
+                      {formatCurrency(
+                        payrollPaidAmount
+                      )}
+                    </small>
+                  </div>
 
-              <div className="kpi-icon">
-                <WalletCards size={25} />
-              </div>
+                  <div className="kpi-icon">
+                    <WalletCards size={25} />
+                  </div>
 
-              <div className="kpi-line">
-                <TrendingUp size={32} />
-              </div>
-            </div>
+                  <div className="kpi-line">
+                    <TrendingUp size={32} />
+                  </div>
+                </div>
+              </>
+            )}
 
-            {/* EXPENSES */}
-            <div className="dashboard-kpi-card kpi-red">
-              <div className="kpi-content">
-                <span className="kpi-label">
-                  Expenses (This Month)
-                </span>
+            {isOwner && (
+              <>
+                {/* EXPENSES */}
+                <div className="dashboard-kpi-card kpi-red">
+                  <div className="kpi-content">
+                    <span className="kpi-label">
+                      Expenses (This Month)
+                    </span>
 
-                <strong>
-                  {formatCurrency(
-                    dashboard.expenses.totalAmount
-                  )}
-                </strong>
+                    <strong>
+                      {formatCurrency(
+                        expensesTotalAmount
+                      )}
+                    </strong>
 
-                <small>
-                  Total Recorded Expenses
-                </small>
-              </div>
+                    <small>
+                      Total Recorded Expenses
+                    </small>
+                  </div>
 
-              <div className="kpi-icon">
-                <ReceiptText size={25} />
-              </div>
+                  <div className="kpi-icon">
+                    <ReceiptText size={25} />
+                  </div>
 
-              <div className="kpi-line">
-                <TrendingUp size={32} />
-              </div>
-            </div>
+                  <div className="kpi-line">
+                    <TrendingUp size={32} />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -605,20 +622,24 @@ const completedProjectPercentage =
                   <small>Items in Stock</small>
                 </div>
 
-                <div className="inventory-divider"></div>
+                {isOwner && (
+                  <>
+                    <div className="inventory-divider"></div>
 
-                <div className="inventory-stat">
-                  <span>Inventory Value</span>
+                    <div className="inventory-stat">
+                      <span>Inventory Value</span>
 
-                  <strong>
-                    {formatCurrency(
-                      dashboard.inventory
-                        .totalInventoryValue
-                    )}
-                  </strong>
+                      <strong>
+                        {formatCurrency(
+                          dashboard.inventory
+                            .totalInventoryValue ?? 0
+                        )}
+                      </strong>
 
-                  <small>Total Stock Value</small>
-                </div>
+                      <small>Total Stock Value</small>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="low-stock-box">
@@ -677,15 +698,17 @@ const completedProjectPercentage =
                   <span>Mark Attendance</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    onNavigate("expenses")
-                  }
-                >
-                  <ReceiptText size={22} />
-                  <span>Add Expense</span>
-                </button>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onNavigate("expenses")
+                    }
+                  >
+                    <ReceiptText size={22} />
+                    <span>Add Expense</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -697,15 +720,17 @@ const completedProjectPercentage =
                   <span>Add Material</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    onNavigate("reports")
-                  }
-                >
-                  <BarChart3 size={22} />
-                  <span>View Reports</span>
-                </button>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onNavigate("reports")
+                    }
+                  >
+                    <BarChart3 size={22} />
+                    <span>View Reports</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -845,6 +870,8 @@ const completedProjectPercentage =
                   <span>Just now</span>
                 </div>
 
+                {isOwner && (
+                  <>
                 <div className="recent-activity-item">
                   <div className="activity-icon green">
                     <WalletCards size={17} />
@@ -857,7 +884,7 @@ const completedProjectPercentage =
 
                     <p>
                       {formatCurrency(
-                        dashboard.payroll.paidAmount
+                        dashboard.payroll?.paidAmount ?? 0
                       )}{" "}
                       paid
                     </p>
@@ -878,7 +905,7 @@ const completedProjectPercentage =
 
                     <p>
                       {formatCurrency(
-                        dashboard.expenses.totalAmount
+                        dashboard.expenses?.totalAmount ?? 0
                       )}{" "}
                       recorded
                     </p>
@@ -886,6 +913,8 @@ const completedProjectPercentage =
 
                   <span>Just now</span>
                 </div>
+                </>
+                )}
               </div>
             </div>
           </div>
@@ -897,6 +926,26 @@ const completedProjectPercentage =
   const renderModulePage = () => {
     if (currentPage === "dashboard") {
       return renderDashboardHome();
+    }
+
+    if (
+      !isOwner &&
+      (currentPage === "payroll" ||
+        currentPage === "expenses" ||
+        currentPage === "reports" ||
+        currentPage === "users")
+    ) {
+      return (
+        <section className="dashboard-section">
+          <div className="module-page">
+            <div className="module-empty-state">
+              <ShieldCheck size={40} />
+              <h3>Access Restricted</h3>
+              <p>You do not have permission to access this module.</p>
+            </div>
+          </div>
+        </section>
+      );
     }
 
     if (currentPage === "projects") {
@@ -1069,6 +1118,7 @@ const completedProjectPercentage =
               <span>Attendance</span>
             </button>
 
+            {isOwner && (
             <button
               type="button"
               className={`nav-item ${
@@ -1083,6 +1133,7 @@ const completedProjectPercentage =
               <WalletCards size={20} />
               <span>Payroll</span>
             </button>
+            )}
 
             <button
               type="button"
@@ -1099,6 +1150,7 @@ const completedProjectPercentage =
               <span>Materials</span>
             </button>
 
+            {isOwner && (
             <button
               type="button"
               className={`nav-item ${
@@ -1113,12 +1165,14 @@ const completedProjectPercentage =
               <Receipt size={20} />
               <span>Expenses</span>
             </button>
+            )}
           </div>
 
           {/* SYSTEM */}
           <div className="nav-section">
             <span>SYSTEM</span>
 
+            {isOwner && (
             <button
               type="button"
               className={`nav-item ${
@@ -1133,6 +1187,7 @@ const completedProjectPercentage =
               <BarChart3 size={20} />
               <span>Reports</span>
             </button>
+            )}
 
             <button
               type="button"
@@ -1279,22 +1334,24 @@ const completedProjectPercentage =
                     </button>
                   </div>
 
-                  <div className="notification-item">
-                    <div className="notification-icon">
-                      !
-                    </div>
+                  {isOwner && (
+                    <div className="notification-item">
+                      <div className="notification-icon">
+                        !
+                      </div>
 
-                    <div>
-                      <strong>
-                        Pending Payroll
-                      </strong>
+                      <div>
+                        <strong>
+                          Pending Payroll
+                        </strong>
 
-                      <p>
-                        Check pending payroll
-                        records.
-                      </p>
+                        <p>
+                          Check pending payroll
+                          records.
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="notification-item">
                     <div className="notification-icon">

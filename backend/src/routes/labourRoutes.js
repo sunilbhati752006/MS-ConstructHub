@@ -13,6 +13,7 @@ const {
 
 const authMiddleware = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
+const authorizePermissions = require("../middleware/authorizePermissions");
 
 // =========================
 // Add Labour
@@ -20,7 +21,7 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 router.post(
     "/add",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("labour.create"),
     uploadFile("labour").fields([
         { name: "photo", maxCount: 1 },
         { name: "aadhaarDocument", maxCount: 1 },
@@ -35,7 +36,7 @@ router.post(
 router.get(
     "/all",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("labour.view"),
     getAllLabours
 );
 
@@ -45,7 +46,7 @@ router.get(
 router.get(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("labour.view"),
     getLabourById
 );
 
@@ -55,7 +56,7 @@ router.get(
 router.put(
     "/update/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("labour.update"),
     updateLabour
 );
 
@@ -65,7 +66,7 @@ router.put(
 router.delete(
     "/delete/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("labour.delete"),
     deleteLabour
 );
 

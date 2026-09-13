@@ -10,13 +10,13 @@ const {
 } = require("../controllers/attendanceController");
 
 const authMiddleware = require("../middleware/authMiddleware");
-const authorizeRoles = require("../middleware/roleMiddleware");
+const authorizePermissions = require("../middleware/authorizePermissions");
 
 // Add Attendance
 router.post(
     "/",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("attendance.create"),
     addAttendance
 );
 
@@ -24,7 +24,7 @@ router.post(
 router.get(
     "/",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("attendance.view"),
     getAllAttendance
 );
 
@@ -32,7 +32,7 @@ router.get(
 router.get(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("attendance.view"),
     getAttendanceById
 );
 
@@ -40,7 +40,7 @@ router.get(
 router.put(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("attendance.update"),
     updateAttendance
 );
 
@@ -48,7 +48,7 @@ router.put(
 router.delete(
     "/:id",
     authMiddleware,
-    authorizeRoles("OWNER"),
+    authorizePermissions("attendance.delete"),
     deleteAttendance
 );
 

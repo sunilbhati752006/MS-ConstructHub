@@ -6,13 +6,13 @@ const {
 } = require("../controllers/dashboardController");
 
 const authMiddleware = require("../middleware/authMiddleware");
-const authorizeRoles = require("../middleware/roleMiddleware");
+const authorizePermissions = require("../middleware/authorizePermissions");
 
 // Dashboard Summary
 router.get(
     "/",
     authMiddleware,
-    authorizeRoles("OWNER"),
+   authorizePermissions("dashboard.view"),
     getDashboardSummary
 );
 
